@@ -1,14 +1,96 @@
+# Repository variables are configured on project CI/CD variable settings 
+
+image: ubuntu
+cache:
+  untracked: false
+  policy: pull-push
+
+stages: 
+ # - build
+  - package
+  - deploy
+  
+
+
 before_script:
-  - apt-get update -qq && apt-get install -y -qq sqlite3 libsqlite3-dev nodejs
-  - ruby -v
-  - which ruby
-  - gem install bundler --no-document
-  - bundle install --jobs $(nproc)  "${FLAGS[@]}"
+  - echo "Start CI"
 
-rspec:
-  script:
-    - bundle exec rspec
+### This should be  build stage for app ##
+#build:
+    #stage: build
+  #image: ubuntu
+  #script:
+  #  - gradle build -x test
+  #artifacts:
+  #  reports:
+  #    junit: build/test-results/test/TEST-*.xml
+  ##  paths:
+   #   - build/libs/*.jar
+   # expire_in: 1 hrs
+  #dependencies: []
+  #tags:
+  #  - docker.build
 
-rubocop:
+
+### Building docker image for dev or prod, depending on branch
+
+package-dev:
+  stage: package
+  image: docker:latest
   script:
-    - bundle exec rubocop
+    - docker login -u $NEXUS_REPO_USER -p $NEXUS_REPO_PASS $NEXUS_REPO_URL
+    - docker build -f .ci/.Dockerfile.dev -t $NEXUS_DEV_IMAGE
+    - docker push $NEXUS_DEV_IMAGE
+  allow_failure: false
+  only:
+    - develop
+  tags:
+    - docker.build
+
+
+package-prod:
+  stage: package
+  image: docker:latest
+  script:
+    - docker login -u $NEXUS_REPO_USER -p $NEXUS_REPO_PASS $NEXUS_REPO_URL
+    - docker build -f .ci/.Dockerfile.dev -t $NEXUS_PROD_IMAGE
+    - docker push $NEXUS_PROD_IMAGE
+  allow_failure: false
+  only:
+    - master
+  tags:
+    - docker.build
+  when: manual
+
+
+### Deploy image to dev or prod enviroment, depending on branch
+
+deploy-dev:
+  stage: deploy
+  script:
+    - whoami
+    - docker login -u $NEXUS_USER -p $NEXUS_PASS $NEXUS_REPO_URL
+    - docker pull $NEXUS_DEV_IMAGE
+    - docker rm -f $NEXUS_DEV_IMAGE  2>/dev/null || true
+    - docker run -d --restart unless-stopped --name $NEXUS_DEV_IMAGE -p 80:80 $NEXUS_DEV_IMAGE
+  only:
+    - develop
+  tags:
+    - docker.host
+
+deploy-production:
+  stage: deploy
+  script:
+    - docker login -u $NEXUS_USER -p $NEXUS_PASS $NEXUS_PROD_IMAGE
+    - docker-compose -f .ci/docker-compose.yml down
+    - docker-compose -f .ci/docker-compose.yml pull
+    - docker-compose -f .ci/docker-compose.yml up -d
+  only:
+    - master
+  when: manual
+  tags:
+    - docker.host
+
+after_script:
+  - echo "End CI"
+
