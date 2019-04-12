@@ -39,7 +39,7 @@ package-dev:
   image: docker:latest
   script:
     - docker login -u $NEXUS_REPO_USER -p $NEXUS_REPO_PASS $NEXUS_REPO_URL
-    - docker build -f .ci/.Dockerfile.dev -t $NEXUS_DEV_IMAGE
+    - docker build . -f .ci/.Dockerfile.dev -t $NEXUS_DEV_IMAGE
     - docker push $NEXUS_DEV_IMAGE
   allow_failure: false
   only:
@@ -53,7 +53,7 @@ package-prod:
   image: docker:latest
   script:
     - docker login -u $NEXUS_REPO_USER -p $NEXUS_REPO_PASS $NEXUS_REPO_URL
-    - docker build -f .ci/.Dockerfile.dev -t $NEXUS_PROD_IMAGE
+    - docker build . -f .ci/.Dockerfile.dev -t $NEXUS_PROD_IMAGE
     - docker push $NEXUS_PROD_IMAGE
   allow_failure: false
   only:
