@@ -1,0 +1,10 @@
+version: "3"
+services:
+    web:
+        container_name: test
+        image: $NEXUS_PROD_IMAGE
+        ports:
+          - "80:80"
+    
+  
+
