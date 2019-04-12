@@ -36,7 +36,7 @@ before_script:
 
 package-dev:
   stage: package
-  image: docker:latest
+  image: $DOCKER_BUILD_IMAGE
   script:
     - docker login -u $NEXUS_REPO_USER -p $NEXUS_REPO_PASS $NEXUS_REPO_URL
     - docker build . -f .ci/.Dockerfile.dev -t $NEXUS_DEV_IMAGE
@@ -50,7 +50,7 @@ package-dev:
 
 package-prod:
   stage: package
-  image: docker:latest
+  image: $DOCKER_BUILD_IMAGE
   script:
     - docker login -u $NEXUS_REPO_USER -p $NEXUS_REPO_PASS $NEXUS_REPO_URL
     - docker build . -f .ci/.Dockerfile.dev -t $NEXUS_PROD_IMAGE
