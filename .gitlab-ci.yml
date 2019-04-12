@@ -39,7 +39,7 @@ package-dev:
   stage: package
   image: $DOCKER_BUILD_IMAGE
   script:
-    - docker login -u $NEXUS_REPO_USER -p $NEXUS_REPO_PASS $NEXUS_REPO_URL
+    #- docker login -u $NEXUS_REPO_USER -p $NEXUS_REPO_PASS $NEXUS_REPO_URL
     - docker build . -f .ci/.Dockerfile.dev -t $NEXUS_DEV_IMAGE
     - docker push $NEXUS_DEV_IMAGE
   allow_failure: false
@@ -53,7 +53,7 @@ package-prod:
   stage: package
   image: $DOCKER_BUILD_IMAGE
   script:
-    - docker login -u $NEXUS_REPO_USER -p $NEXUS_REPO_PASS $NEXUS_REPO_URL
+    #- docker login -u $NEXUS_REPO_USER -p $NEXUS_REPO_PASS $NEXUS_REPO_URL
     - docker build . -f .ci/.Dockerfile.dev -t $NEXUS_PROD_IMAGE
     - docker push $NEXUS_PROD_IMAGE
   allow_failure: false
@@ -70,7 +70,7 @@ deploy-dev:
   stage: deploy
   script:
     - whoami
-    - docker login -u $NEXUS_USER -p $NEXUS_PASS $NEXUS_REPO_URL
+    #- docker login -u $NEXUS_USER -p $NEXUS_PASS $NEXUS_REPO_URL
     - docker pull $NEXUS_DEV_IMAGE
     - docker rm -f $NEXUS_DEV_IMAGE  2>/dev/null || true
     - docker run -d --restart unless-stopped --name $NEXUS_DEV_IMAGE -p 80:80 $NEXUS_DEV_IMAGE
@@ -83,7 +83,7 @@ deploy-production:
   stage: deploy
   script:
     - whoami
-    - echo $NEXUS_PASS | docker login --username $NEXUS_USER -password-stdin $NEXUS_REPO_URL
+    #- echo $NEXUS_PASS | docker login --username $NEXUS_USER -password-stdin $NEXUS_REPO_URL
     - docker-compose -f .ci/docker-compose.yml down
     - docker-compose -f .ci/docker-compose.yml pull
     - docker-compose -f .ci/docker-compose.yml up -d
