@@ -1,6 +1,6 @@
 # Repository variables are configured on project CI/CD variable settings 
 
-image: ubuntu
+image: $DOCKER_BUILD_IMAGE
 cache:
   untracked: false
   policy: pull-push
